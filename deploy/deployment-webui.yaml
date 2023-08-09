@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: chatglm-webui
+    qcloud-app: chatglm-webui
+  name: chatglm-webui
+  namespace: default
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: chatglm-webui
+      qcloud-app: chatglm-webui
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: chatglm-webui
+        qcloud-app: chatglm-webui
+    spec:
+      containers:
+      - image: xxx
+        env:
+        - name: WANDB_DISABLED
+          value: 'true'
+        imagePullPolicy: Always
+        name: webui
+        resources:
+          limits:
+            cpu: "4"
+            memory: 32000Mi
+            nvidia.com/gpu: "1"
+          requests:
+            cpu: "4"
+            memory: 32000Mi
+            nvidia.com/gpu: "1"
+        securityContext:
+          privileged: false
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /data
+          name: models
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: qcloudregistrykey
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      volumes:
+      - name: models
+        persistentVolumeClaim:
+          claimName: models
